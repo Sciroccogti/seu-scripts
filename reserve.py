@@ -1,6 +1,7 @@
 import ssl
 import pytesseract
 from PIL import Image
+import urllib
 
 from utils.login import login
 import config
@@ -19,31 +20,38 @@ def main():
     s = login(card_num, password)
 
     headers = {
-        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36'}
-    res = s.get(urls.res_val_image, headers = headers, allow_redirects=True)
+        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36',
+    }
+    res = s.get(urls.res_val_image, headers=headers, allow_redirects=True)
     res = s.get(str(res.content).split(".href='")
-                [-1].split("'</script>")[0], headers = headers)
+                [-1].split("'</script>")[0], headers=headers)
     with open('validateimage.jpg', 'wb') as file:
         file.write(res.content)
 
-    img = Image.open('validateimage.jpg')
-    valid_s = pytesseract.image_to_string(img)
+    # img = Image.open('validateimage.jpg')
+    # valid_s = pytesseract.image_to_string(img)
+    # print(valid_s)
+    valid_s = input('请输入  ./validateimage.jpg  的验证码\n')
 
     postdata = {
-        'orderVO.useTime': config.reserve_data['reservetime'],
-        'orderVO.itemId': config.reserve_data['item'],
-        'orderVO.useMode': '2',
-        'orderVO.phone': config.reserve_data['phone'],
-        'orderVO.remark': '',
+        'ids': '',
+        'useTime': config.reserve_data['reservetime'],
+        'itemId': config.reserve_data['item'],
+        'allowHalf': 2,
         'validateCode': valid_s,
+        'phone': config.reserve_data['phone'],
+        'remark': '',
+        'useUserIds': '',
     }
 
-    res = s.post(urls.res_url, data=postdata,
+    data = urllib.parse.urlencode(postdata).encode('utf-8')
+
+    res = s.post(urls.res_url, data=data,
                  headers=headers, allow_redirects=False)
     print(res.status_code)
     print(res.text)
 
 
 if __name__ == '__main__':
-    pytesseract.pytesseract.tesseract_cmd = r'D:\Program Files\Tesseract-OCR\tesseract.exe' 
+    # pytesseract.pytesseract.tesseract_cmd = r'D:\Program Files\Tesseract-OCR\tesseract.exe'
     main()
