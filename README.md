@@ -6,7 +6,7 @@
 
 ## 2 Install
 
-依赖: requests, js2py, bs4, pytesseract
+依赖: requests, js2py, bs4, ddddocr
 
 ## 3 Use Case
 
