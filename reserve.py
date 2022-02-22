@@ -18,10 +18,11 @@ def main():
     print("开始登陆")
     s = login(card_num, password)
 
-    res = s.get(urls.res_val_image, allow_redirects=True)
-    # print(res)
-    # return
-    res = s.get(str(res.content).split(".href='")[-1].split("'</script>")[0])
+    headers = {
+        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36'}
+    res = s.get(urls.res_val_image, headers = headers, allow_redirects=True)
+    res = s.get(str(res.content).split(".href='")
+                [-1].split("'</script>")[0], headers = headers)
     with open('validateimage.jpg', 'wb') as file:
         file.write(res.content)
 
@@ -37,10 +38,12 @@ def main():
         'validateCode': valid_s,
     }
 
-    res = s.post(urls.res_url, data=postdata, allow_redirects=False)
+    res = s.post(urls.res_url, data=postdata,
+                 headers=headers, allow_redirects=False)
     print(res.status_code)
     print(res.text)
 
 
 if __name__ == '__main__':
+    pytesseract.pytesseract.tesseract_cmd = r'D:\Program Files\Tesseract-OCR\tesseract.exe' 
     main()
