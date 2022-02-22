@@ -1,6 +1,5 @@
 import ssl
-import pytesseract
-from PIL import Image
+import ddddocr
 import urllib
 
 from utils.login import login
@@ -21,6 +20,8 @@ def main():
 
     headers = {
         'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36',
+        'X-Requested-With': 'XMLHttpRequest',
+        'Content-Type': 'application/x-www-form-urlencoded',
     }
     res = s.get(urls.res_val_image, headers=headers, allow_redirects=True)
     res = s.get(str(res.content).split(".href='")
@@ -28,10 +29,9 @@ def main():
     with open('validateimage.jpg', 'wb') as file:
         file.write(res.content)
 
-    # img = Image.open('validateimage.jpg')
-    # valid_s = pytesseract.image_to_string(img)
-    # print(valid_s)
-    valid_s = input('请输入  ./validateimage.jpg  的验证码\n')
+    f = open('validateimage.jpg', 'rb')
+    img_bytes = f.read()
+    valid_s = ocr.classification(img_bytes)
 
     postdata = {
         'ids': '',
@@ -53,5 +53,5 @@ def main():
 
 
 if __name__ == '__main__':
-    # pytesseract.pytesseract.tesseract_cmd = r'D:\Program Files\Tesseract-OCR\tesseract.exe'
+    ocr = ddddocr.DdddOcr()
     main()
