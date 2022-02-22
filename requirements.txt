@@ -1,0 +1,4 @@
+beautifulsoup4
+ddddocr
+Js2Py
+requests

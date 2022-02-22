@@ -65,6 +65,8 @@ def main():
 
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.DEBUG, filename="reserve.log")
+
     now_time = datetime.datetime.now()
     # 获取启动时间
     next_time = now_time + datetime.timedelta(days=+1)
@@ -74,9 +76,10 @@ if __name__ == '__main__':
     next_time = datetime.datetime(next_year, next_month, next_day, 7, 59, 50, 0)
     # 获取距离启动时间，单位为秒
     timer_start_time = (next_time - now_time).total_seconds()
+    logging.info("睡眠 %d 秒" % timer_start_time)
     sleep(timer_start_time)
+
     ocr = ddddocr.DdddOcr()
-    logging.basicConfig(level=logging.DEBUG, filename="reserve.log")
     success = False
     count = 0
     while(not success and count < 20):
