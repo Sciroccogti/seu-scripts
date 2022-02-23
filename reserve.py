@@ -56,8 +56,8 @@ def main():
     logging.debug(res.status_code)
     logging.debug(res.text)
     resJson = json.loads(res.text)
-    if 'success' in resJson.keys():
-        logging.info(resJson['success'])
+    if 'sucuss' in resJson.keys():
+        logging.info(resJson['sucuss'])
         return True
     else:
         logging.error(resJson)
@@ -65,7 +65,8 @@ def main():
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG, filename="reserve.log")
+    logging.basicConfig(level=logging.DEBUG, filename="reserve.log",
+                        format="%(asctime)s - %(levelname)-9s - %(filename)-8s : %(lineno)s line - %(message)s")
 
     now_time = datetime.datetime.now()
     # 获取启动时间
@@ -73,7 +74,8 @@ if __name__ == '__main__':
     next_year = next_time.date().year
     next_month = next_time.date().month
     next_day = next_time.date().day
-    next_time = datetime.datetime(next_year, next_month, next_day, 7, 59, 50, 0)
+    next_time = datetime.datetime(
+        next_year, next_month, next_day, 7, 59, 50, 0)
     # 获取距离启动时间，单位为秒
     timer_start_time = (next_time - now_time).total_seconds()
     logging.info("睡眠 %d 秒" % timer_start_time)
