@@ -70,12 +70,13 @@ if __name__ == '__main__':
 
     now_time = datetime.datetime.now()
     # 获取启动时间
-    next_time = now_time + datetime.timedelta(days=+1)
-    next_year = next_time.date().year
-    next_month = next_time.date().month
-    next_day = next_time.date().day
-    next_time = datetime.datetime(
-        next_year, next_month, next_day, 7, 59, 50, 0)
+    next_time = datetime.datetime.strptime(
+        config.reserve_data['reservetime'][:10], "%Y-%m-%d")  # 获取要预约的日期，初始为0点
+    next_time = next_time + datetime.timedelta(days=-2)  # 提前两天预约
+    next_time = next_time + datetime.timedelta(hours=+7, minutes=+59, seconds=+58) # 07:59:58 启动
+    print("启动时间：", next_time)
+    print("预约时间：", config.reserve_data['reservetime'])
+
     # 获取距离启动时间，单位为秒
     timer_start_time = (next_time - now_time).total_seconds()
     logging.info("睡眠 %d 秒" % timer_start_time)
