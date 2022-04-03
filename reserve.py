@@ -1,9 +1,12 @@
 import datetime
 import json
 import logging
+from random import random
 import ssl
-from time import sleep
+import threading
 import urllib
+from concurrent.futures import ALL_COMPLETED, ThreadPoolExecutor, wait
+from time import sleep
 
 import ddddocr
 
@@ -11,8 +14,9 @@ import config
 import urls
 from utils.login import login
 
+lock= threading.Lock()
 
-def main():
+def reserve(ocr):
     ssl._create_default_https_context = ssl._create_unverified_context
 
     card_num = config.card_num
@@ -31,12 +35,7 @@ def main():
     res = s.get(urls.res_val_image, headers=headers, allow_redirects=True)
     res = s.get(str(res.content).split(".href='")
                 [-1].split("'</script>")[0], headers=headers)
-    with open('validateimage.jpg', 'wb') as file:
-        file.write(res.content)
-
-    f = open('validateimage.jpg', 'rb')
-    img_bytes = f.read()
-    valid_s = ocr.classification(img_bytes)
+    valid_s = ocr.classification(res.content)
 
     postdata = {
         'ids': '',
@@ -63,8 +62,27 @@ def main():
         logging.error(resJson)
         return False
 
+def iter():
+    global success
+    count = 0
+    ocr = ddddocr.DdddOcr(show_ad=False)
+    _success = False
+    while(count < 50):
+        try:
+            _success = reserve(ocr)
+            # print(threading.currentThread().ident)
+        except:
+            pass
+        count += 1
+        with lock:
+            if success:
+                break
+            elif _success:
+                success = _success
+                break
 
 if __name__ == '__main__':
+    global success
     logging.basicConfig(level=logging.DEBUG, filename="reserve.log",
                         format="%(asctime)s - %(levelname)-9s - %(filename)-8s : %(lineno)s line - %(message)s")
 
@@ -79,12 +97,13 @@ if __name__ == '__main__':
 
     # 获取距离启动时间，单位为秒
     timer_start_time = (next_time - now_time).total_seconds()
-    logging.info("睡眠 %d 秒" % timer_start_time)
-    sleep(timer_start_time)
+    if timer_start_time > 0:
+        logging.info("睡眠 %d 秒" % timer_start_time)
+        sleep(timer_start_time)
 
-    ocr = ddddocr.DdddOcr()
-    success = False
-    count = 0
-    while(not success and count < 20):
-        success = main()
-        count += 1
+    success =False
+    pool = ThreadPoolExecutor(max_workers=4)
+    tasks_ = [pool.submit(iter) for i in range(4)]
+    wait(tasks_, return_when=ALL_COMPLETED)
+
+
