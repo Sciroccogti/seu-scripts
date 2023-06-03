@@ -14,7 +14,8 @@ import config
 import urls
 from utils.login import login
 
-lock= threading.Lock()
+lock = threading.Lock()
+
 
 def reserve(ocr):
     ssl._create_default_https_context = ssl._create_unverified_context
@@ -32,9 +33,9 @@ def reserve(ocr):
         'X-Requested-With': 'XMLHttpRequest',
         'Content-Type': 'application/x-www-form-urlencoded',
     }
-    res = s.get(urls.res_val_image, headers=headers, allow_redirects=True)
+    res = s.get(urls.res_val_image, headers=headers, allow_redirects=True, timeout=10)
     res = s.get(str(res.content).split(".href='")
-                [-1].split("'</script>")[0], headers=headers)
+                [-1].split("'</script>")[0], headers=headers, timeout=10)
     valid_s = ocr.classification(res.content)
 
     postdata = {
@@ -51,7 +52,7 @@ def reserve(ocr):
     data = urllib.parse.urlencode(postdata).encode('utf-8')
 
     res = s.post(urls.res_url, data=data,
-                 headers=headers, allow_redirects=False)
+                 headers=headers, allow_redirects=False, timeout=10)
     logging.debug(res.status_code)
     logging.debug(res.text)
     resJson = json.loads(res.text)
@@ -61,6 +62,7 @@ def reserve(ocr):
     else:
         logging.error(resJson)
         return False
+
 
 def iter():
     global success
@@ -80,6 +82,7 @@ def iter():
             elif _success:
                 success = _success
                 break
+
 
 if __name__ == '__main__':
     global success
@@ -101,9 +104,7 @@ if __name__ == '__main__':
         logging.info("睡眠 %d 秒" % timer_start_time)
         sleep(timer_start_time)
 
-    success =False
-    pool = ThreadPoolExecutor(max_workers=4)
-    tasks_ = [pool.submit(iter) for i in range(4)]
+    success = False
+    pool = ThreadPoolExecutor(max_workers=config.thread_num)
+    tasks_ = [pool.submit(iter) for i in range(config.thread_num)]
     wait(tasks_, return_when=ALL_COMPLETED)
-
-
